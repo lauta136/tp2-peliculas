@@ -64,7 +64,7 @@ export async function createMovie(req: Request<{}, {}, CreateMovieInput>, res: R
   }
 }
 
-// PUT y PATCH comparten controller: cambia solo el schema que valida el body en la ruta.
+// PUT y PATCH comparten controller: misma busqueda, 404 y chequeo de dueño; cambia como se guarda.
 export async function updateMovie(
   req: Request<{ id: string }, {}, UpdateMovieInput>,
   res: Response
@@ -90,7 +90,11 @@ export async function updateMovie(
       return;
     }
 
-    const updated = await moviesService.updateMovie(id, req.body);
+    // PUT reemplaza el recurso (body validado con replaceMovieSchema); PATCH cambia solo lo que viene.
+    const updated =
+      req.method === "PUT"
+        ? await moviesService.replaceMovie(id, req.body as CreateMovieInput)
+        : await moviesService.updateMovie(id, req.body);
     if (!updated) {
       fail(res, 404, "Pelicula no encontrada");
       return;

@@ -57,8 +57,26 @@ export function createMovie(input: CreateMovieInput, owner: Owner): Promise<IMov
   return Movie.create({ ...input, ownerId: owner.id, ownerName: owner.name });
 }
 
+// posterUrl es el unico campo opcional sin default: "" o ausente (en PUT) significa "sacar el poster".
+function posterUpdate(posterUrl: string | undefined, removeIfMissing: boolean) {
+  if (posterUrl) return { $set: { posterUrl } };
+  if (posterUrl === "" || removeIfMissing) return { $unset: { posterUrl: 1 } };
+  return {};
+}
+
+// PATCH: cambia solo los campos que vienen.
 export function updateMovie(id: string, input: UpdateMovieInput): Promise<IMovieDocument | null> {
-  return Movie.findByIdAndUpdate(id, input, { new: true, runValidators: true });
+  const { posterUrl, ...fields } = input;
+  const poster = posterUpdate(posterUrl, false);
+  return Movie.findByIdAndUpdate(id, { ...poster, $set: { ...fields, ...poster.$set } }, { new: true, runValidators: true });
+}
+
+// PUT: reemplaza el recurso. Todos los campos editables vienen en el body (createMovieSchema); los
+// opcionales que no vienen se borran. El dueño (ownerId/ownerName) no se toca: no es editable.
+export function replaceMovie(id: string, input: CreateMovieInput): Promise<IMovieDocument | null> {
+  const { posterUrl, ...fields } = input;
+  const poster = posterUpdate(posterUrl, true);
+  return Movie.findByIdAndUpdate(id, { ...poster, $set: { ...fields, ...poster.$set } }, { new: true, runValidators: true });
 }
 
 export function deleteMovie(id: string): Promise<IMovieDocument | null> {
