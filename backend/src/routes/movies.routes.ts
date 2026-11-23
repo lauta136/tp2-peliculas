@@ -5,10 +5,12 @@
 //   - Crear: cualquier usuario logueado (user o admin); la pelicula queda a su nombre.
 //   - Editar / eliminar: el dueño o un admin. requireRole deja pasar a los dos roles y el
 //     controller chequea la propiedad (canModifyMovie) → 403 si no es suya.
+//   - Estadisticas del catalogo: solo admin → authMiddleware + requireRole("admin"), 403 para un user.
 import { Router } from "express";
 import {
   listMovies,
   getMovieById,
+  getMovieStats,
   createMovie,
   updateMovie,
   deleteMovie,
@@ -19,8 +21,11 @@ import { authMiddleware, optionalAuth, requireRole } from "../middlewares/auth.m
 
 const router = Router();
 const loggedIn = [authMiddleware, requireRole("user", "admin")];
+const onlyAdmin = [authMiddleware, requireRole("admin")];
 
 router.get("/", optionalAuth, validateQuery(listMoviesSchema), listMovies);
+// /stats va ANTES de /:id: si no, Express tomaria "stats" como un id.
+router.get("/stats", onlyAdmin, getMovieStats);
 router.get("/:id", getMovieById);
 router.post("/", loggedIn, validateBody(createMovieSchema), createMovie);
 router.put("/:id", loggedIn, validateBody(replaceMovieSchema), updateMovie);

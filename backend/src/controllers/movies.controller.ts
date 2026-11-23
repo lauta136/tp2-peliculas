@@ -25,6 +25,16 @@ export async function listMovies(req: Request, res: Response): Promise<void> {
   }
 }
 
+// GET /api/movies/stats — solo admin (authMiddleware + requireRole("admin") en la ruta).
+export async function getMovieStats(_req: Request, res: Response): Promise<void> {
+  try {
+    res.status(200).json(await moviesService.getStats());
+  } catch (error) {
+    console.error("[movies] error getting stats:", error);
+    fail(res, 500, "No se pudieron calcular las estadisticas");
+  }
+}
+
 export async function getMovieById(req: Request<{ id: string }>, res: Response): Promise<void> {
   const { id } = req.params;
 

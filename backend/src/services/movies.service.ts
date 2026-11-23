@@ -79,6 +79,58 @@ export function replaceMovie(id: string, input: CreateMovieInput): Promise<IMovi
   return Movie.findByIdAndUpdate(id, { ...poster, $set: { ...fields, ...poster.$set } }, { new: true, runValidators: true });
 }
 
+export interface MovieStats {
+  total: number;
+  watched: number;
+  averageRating: number;
+  byGenre: { genre: string; count: number }[];
+  topContributors: { name: string; count: number }[];
+}
+
+// Estadisticas del catalogo para el panel de admin (GET /api/movies/stats, solo admin).
+export async function getStats(): Promise<MovieStats> {
+  const [result] = await Movie.aggregate<{
+    totals: { total: number; watched: number; averageRating: number }[];
+    byGenre: { genre: string; count: number }[];
+    topContributors: { name: string; count: number }[];
+  }>([
+    {
+      $facet: {
+        totals: [
+          {
+            $group: {
+              _id: null,
+              total: { $sum: 1 },
+              watched: { $sum: { $cond: ["$watched", 1, 0] } },
+              averageRating: { $avg: "$rating" },
+            },
+          },
+        ],
+        byGenre: [
+          { $group: { _id: "$genre", count: { $sum: 1 } } },
+          { $sort: { count: -1, _id: 1 } },
+          { $project: { _id: 0, genre: "$_id", count: 1 } },
+        ],
+        topContributors: [
+          { $group: { _id: "$ownerId", name: { $last: "$ownerName" }, count: { $sum: 1 } } },
+          { $sort: { count: -1, name: 1 } },
+          { $limit: 5 },
+          { $project: { _id: 0, name: 1, count: 1 } },
+        ],
+      },
+    },
+  ]);
+
+  const totals = result?.totals[0] ?? { total: 0, watched: 0, averageRating: 0 };
+  return {
+    total: totals.total,
+    watched: totals.watched,
+    averageRating: Math.round((totals.averageRating ?? 0) * 10) / 10,
+    byGenre: result?.byGenre ?? [],
+    topContributors: result?.topContributors ?? [],
+  };
+}
+
 export function deleteMovie(id: string): Promise<IMovieDocument | null> {
   return Movie.findByIdAndDelete(id);
 }
