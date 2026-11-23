@@ -37,6 +37,13 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: { message: "Error interno del servidor" } });
 });
 
+// Red de seguridad: por defecto Node MATA el proceso ante una promesa rechazada que nadie captura.
+// El SDK de Gemini a veces deja una suelta cuando falla el streaming, y eso tiraba todo el backend
+// (Render lo reiniciaba y el front veia 502). Asi queda en el log y el server sigue atendiendo.
+process.on("unhandledRejection", (reason) => {
+  console.error("[server] unhandled rejection (el server sigue corriendo):", reason);
+});
+
 async function startServer(): Promise<void> {
   await connectMongoDB();
 
