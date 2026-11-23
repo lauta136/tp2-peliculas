@@ -4,10 +4,12 @@ import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 
 function badRequest(res: Response, error: z.ZodError): void {
+  const { formErrors, fieldErrors } = z.flattenError(error);
   res.status(400).json({
     error: {
-      message: "Los datos enviados no son validos",
-      details: z.flattenError(error).fieldErrors,
+      // formErrors: errores que no son de un campo puntual (ej: PATCH sin ningun campo).
+      message: formErrors[0] ?? "Los datos enviados no son validos",
+      details: fieldErrors,
     },
   });
 }

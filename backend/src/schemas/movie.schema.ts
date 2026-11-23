@@ -12,8 +12,8 @@ const booleanish = z.preprocess(
 
 // GET /api/movies?search=&genre=&watched=&mine=&page=&limit=&sortBy=&sortOrder=
 export const listMoviesSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(50).default(12),
+  page: z.coerce.number().int().min(1, { error: "La pagina minima es 1" }).default(1),
+  limit: z.coerce.number().int().min(1).max(50, { error: "Maximo 50 resultados por pagina" }).default(12),
   sortBy: z.enum(ALLOWED_SORT_FIELDS).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   search: z.string().trim().min(1).max(120).optional(),
