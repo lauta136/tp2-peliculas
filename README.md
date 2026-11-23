@@ -87,7 +87,7 @@ Ambos se validan con Zod y devuelven **400** con el error de cada campo.
 
 | Método | Ruta | Rol requerido | Descripción |
 |---|---|---|---|
-| POST | `/api/agent/chat` | `user` o `admin` | Asistente LangChain (respuesta en streaming SSE) |
+| POST | `/api/agent/chat` | `user` o `admin` | Asistente LangChain (eventos SSE: tools usadas, respuesta y fin) |
 | GET | `/api/config` | público | Qué logins sociales y si el asistente están habilitados |
 | GET | `/health` | público | Estado del servidor |
 | * | `/api/auth/*` | — | Better Auth: `sign-up/email`, `sign-in/email`, `sign-in/social`, `sign-out`, `get-session`, `callback/github`, `callback/google` |
@@ -99,7 +99,9 @@ Ruta `/chat` del front (requiere sesión). Un agente de LangChain (`createAgent`
 cinco tools: `list_movies`, `get_movie`, `create_movie`, `update_movie` y `delete_movie`. Las tools usan
 el **mismo service** que la API REST, y las de escritura chequean los permisos adentro de la tool con el
 usuario de la sesión, que llega en `runtime.context` (el modelo no lo ve ni lo puede falsificar): un `user`
-no puede editar películas ajenas aunque se lo pida al asistente. La respuesta llega token por token por SSE.
+no puede editar películas ajenas aunque se lo pida al asistente. La respuesta llega por SSE: primero qué tools
+está usando y después el texto. A Gemini se lo llama sin streaming, porque el SDK que usa `@langchain/google-genai`
+falla al parsear el streaming de los modelos 3.x.
 
 Ejemplos: *"¿cuáles son las 3 mejores películas de ciencia ficción?"*, *"marcá Dune como vista"*,
 *"agregá Whiplash, de Damien Chazelle, drama, 2014, 106 minutos, un 9"*.

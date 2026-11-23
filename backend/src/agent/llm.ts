@@ -1,6 +1,8 @@
 // El modelo (el "cerebro"): Gemini via LangChain.
 // temperature 0: respuestas deterministas, lo que queremos para elegir tools.
-// streaming: true → Gemini manda la respuesta token por token en vez de toda junta al final.
+//
+//
+// Sin streaming: cada respuesta de Gemini llega completa (ver agent.ts: por que no token por token).
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 // Se puede cambiar con GEMINI_MODEL sin tocar codigo (cualquier modelo de Gemini con tool calling).
@@ -13,8 +15,8 @@ export function createLlm(): ChatGoogleGenerativeAI | null {
     console.warn("[llm] GEMINI_API_KEY vacia: el asistente queda deshabilitado");
     return null;
   }
-  console.log(`[llm] Gemini listo: model=${MODEL} streaming=true`);
-  // maxRetries 2: si Gemini esta saturado (503) el usuario ve el error en segundos, en vez de esperar
-  // ~1 minuto de reintentos con espera creciente.
-  return new ChatGoogleGenerativeAI({ model: MODEL, apiKey, temperature: 0, streaming: true, maxRetries: 2 });
+  console.log(`[llm] Gemini listo: model=${MODEL}`);
+  // maxRetries 4: los 503 ("high demand") de Gemini suelen durar segundos y se resuelven reintentando
+  // con espera creciente. Si se agota la cuota diaria (429) reintentar no sirve: el controller lo explica.
+  return new ChatGoogleGenerativeAI({ model: MODEL, apiKey, temperature: 0, maxRetries: 4 });
 }

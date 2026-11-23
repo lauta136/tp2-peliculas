@@ -33,28 +33,26 @@ export async function* streamAgent(
 ): AsyncGenerator<AgentEvent> {
   if (!agent) throw new Error("Agente deshabilitado: falta GEMINI_API_KEY");
 
-  // Dos modos de streaming a la vez; cada item llega como [modo, payload]:
-  //   "messages" → cada TOKEN apenas lo genera el modelo     → texto en vivo
-  //   "updates"  → cada MENSAJE COMPLETO al terminar un paso → que tools pidio y con que args
+  // streamMode "updates": un evento por cada paso TERMINADO del loop, con los mensajes completos.
+  //   - Si el modelo pidio tools → se avisa cada una (el front muestra "Buscando películas…").
+  //   - Si respondio texto → se manda el texto entero como un solo "token".
+  // No se usa el modo "messages" (token por token): obliga a LangChain a pedirle streaming a Gemini, y
+  // el SDK que usa @langchain/google-genai a veces no puede parsear el final de ese stream con los
+  // modelos 3.x ("Failed to parse stream"). Sin streaming, cada llamada es un request normal.
   // recursionLimit corta el loop si el modelo se queda llamando tools sin parar.
   const stream = await agent.stream(
     { messages: [{ role: "user", content: message }] },
-    { streamMode: ["messages", "updates"], recursionLimit: 10, signal, context }
+    { streamMode: "updates", recursionLimit: 10, signal, context }
   );
 
-  for await (const [mode, payload] of stream) {
-    if (mode === "messages") {
-      const [chunk] = payload as [BaseMessage, unknown];
-      // Solo el texto del modelo va al usuario. Los ToolMessage (resultado crudo) los lee el modelo.
-      if (chunk.type === "ai" && chunk.text) yield { type: "token", text: chunk.text };
-      continue;
-    }
-
-    for (const update of Object.values(payload as Record<string, { messages?: BaseMessage[] }>)) {
-      for (const msg of update?.messages ?? []) {
+  for await (const update of stream) {
+    for (const step of Object.values(update as Record<string, { messages?: BaseMessage[] }>)) {
+      for (const msg of step?.messages ?? []) {
+        // Solo los mensajes del modelo. Los ToolMessage (resultado crudo de la tool) los lee el modelo.
         if (msg.type !== "ai") continue;
         const calls = "tool_calls" in msg && Array.isArray(msg.tool_calls) ? msg.tool_calls : [];
         for (const call of calls) yield { type: "tool", name: call.name, args: call.args };
+        if (msg.text) yield { type: "token", text: msg.text };
       }
     }
   }
