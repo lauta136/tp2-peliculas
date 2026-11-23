@@ -1,4 +1,4 @@
-// Los modelos suelen mandar null (o "") en los parametros opcionales que no quieren usar:
+// Los modelos a veces mandan null (o "") en los parametros opcionales que no quieren usar:
 // { career: null, active: null, search: "" }.
 // Groq valida el pedido contra el JSON Schema en SU servidor: si el schema dice .optional() (puede
 // faltar pero no ser null) o .min(1), rechaza la llamada antes de que llegue a nuestro codigo.

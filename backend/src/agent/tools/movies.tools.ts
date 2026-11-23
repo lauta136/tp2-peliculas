@@ -53,14 +53,15 @@ export const listMoviesTool = tool(
     description:
       "Lista peliculas del catalogo. Filtros opcionales: texto a buscar en titulo/director/sinopsis, genero, " +
       "si ya fue vista, solo las del usuario (mine) y orden. Devuelve el total y hasta 20 resultados.",
-    // .nullish(): el modelo puede mandar null en los filtros que no usa (ver without-nulls.ts).
+    // .optional() y no .nullish(): Gemini rechaza los tipos ["boolean","null"] que genera nullish.
+    // Si igual manda null o "" en un filtro, withoutNulls lo descarta.
     schema: z.object({
-      search: z.string().trim().max(120).nullish().describe("Texto a buscar, ej: 'Nolan'"),
-      genre: z.enum(GENRES).nullish().describe("Genero exacto"),
-      watched: z.boolean().nullish().describe("true = solo vistas, false = solo pendientes"),
-      mine: z.boolean().nullish().describe("true = solo las peliculas que cargo el usuario actual"),
-      sortBy: z.enum(ALLOWED_SORT_FIELDS).nullish().describe("Campo de orden, ej: 'rating' para las mejores"),
-      sortOrder: z.enum(["asc", "desc"]).nullish(),
+      search: z.string().trim().max(120).optional().describe("Texto a buscar, ej: 'Nolan'"),
+      genre: z.enum(GENRES).optional().describe("Genero exacto"),
+      watched: z.boolean().optional().describe("true = solo vistas, false = solo pendientes"),
+      mine: z.boolean().optional().describe("true = solo las peliculas que cargo el usuario actual"),
+      sortBy: z.enum(ALLOWED_SORT_FIELDS).optional().describe("Campo de orden, ej: 'rating' para las mejores"),
+      sortOrder: z.enum(["asc", "desc"]).optional(),
     }),
   }
 );
@@ -107,8 +108,8 @@ export const createMovieTool = tool(
       releaseDate: z.string().describe("Fecha de estreno en formato AAAA-MM-DD"),
       durationMinutes: z.number().int().describe("Duracion en minutos"),
       rating: z.number().describe("Puntaje de 0 a 10"),
-      watched: z.boolean().nullish().describe("Si el usuario ya la vio"),
-      synopsis: z.string().nullish().describe("Sinopsis breve"),
+      watched: z.boolean().optional().describe("Si el usuario ya la vio"),
+      synopsis: z.string().optional().describe("Sinopsis breve"),
     }),
   }
 );
@@ -137,14 +138,14 @@ export const updateMovieTool = tool(
       "lo pide. Primero obtene el id con list_movies. Manda solo los campos a cambiar.",
     schema: z.object({
       id: z.string().describe("El id de la pelicula"),
-      title: z.string().nullish(),
-      director: z.string().nullish(),
-      genre: z.enum(GENRES).nullish(),
-      releaseDate: z.string().nullish().describe("AAAA-MM-DD"),
-      durationMinutes: z.number().int().nullish(),
-      rating: z.number().nullish().describe("0 a 10"),
-      watched: z.boolean().nullish(),
-      synopsis: z.string().nullish(),
+      title: z.string().optional(),
+      director: z.string().optional(),
+      genre: z.enum(GENRES).optional(),
+      releaseDate: z.string().optional().describe("AAAA-MM-DD"),
+      durationMinutes: z.number().int().optional(),
+      rating: z.number().optional().describe("0 a 10"),
+      watched: z.boolean().optional(),
+      synopsis: z.string().optional(),
     }),
   }
 );
