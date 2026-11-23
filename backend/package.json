@@ -1,0 +1,35 @@
+{
+  "name": "peliculas-backend",
+  "version": "1.0.0",
+  "description": "API REST de peliculas: Express + TypeScript + MongoDB + Better Auth",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "seed": "tsx scripts/seed.ts"
+  },
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@better-auth/mongo-adapter": "^1.7.27",
+    "@langchain/core": "^1.5.0",
+    "@langchain/google-genai": "^2.3.7",
+    "better-auth": "^1.7.27",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "langchain": "^1.6.7",
+    "mongodb": "^7.9.1",
+    "mongoose": "^9.12.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
