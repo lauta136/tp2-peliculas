@@ -44,10 +44,15 @@ confirmado con el profesor:
 | Crear película (queda a su nombre) | ❌ 401 | ✅ | ✅ |
 | Editar / eliminar película **propia** | ❌ 401 | ✅ | ✅ |
 | Editar / eliminar película **ajena** | ❌ 401 | ❌ 403 | ✅ |
+| Ver estadísticas del catálogo (`/api/movies/stats`) | ❌ 401 | ❌ 403 | ✅ |
 | Gestionar usuarios (crear, cambiar rol, eliminar) | ❌ 401 | ❌ 403 | ✅ |
 
-- Las rutas de escritura pasan por `authMiddleware` + `requireRole("user", "admin")`, y el controller
-  chequea la propiedad con `canModifyMovie` (dueño o admin, si no **403**).
+- La consigna base pide escritura solo para admin con `authMiddleware` + `requireRole("admin")`. Con el
+  opcional de registros propios, el user también crea y edita lo suyo, así que las rutas de escritura usan
+  `authMiddleware` + `requireRole("user", "admin")` y el controller chequea la propiedad con
+  `canModifyMovie` (dueño o admin, si no **403**).
+- Lo que es solo de admin usa `authMiddleware` + `requireRole("admin")`: `GET /api/movies/stats`
+  (estadísticas del catálogo que muestra el panel de admin) — ver `backend/src/routes/movies.routes.ts`.
 - La gestión de usuarios usa el plugin `admin` de Better Auth (`authClient.admin.setRole`, `createUser`,
   `removeUser`), que solo acepta requests de usuarios con rol `admin`.
 - En el front, `/admin` está protegida por rol: un usuario común ve la pantalla **"Sin permisos"**.
@@ -70,6 +75,7 @@ Base: `/api`. Errores siempre como `{ "error": { "message": "...", "details": { 
 | Método | Ruta | Rol requerido | Respuestas |
 |---|---|---|---|
 | GET | `/api/movies` | público (`mine=true` requiere sesión) | 200, 400, 401 |
+| GET | `/api/movies/stats` | `admin` | 200, 401, 403 |
 | GET | `/api/movies/:id` | público | 200, 400 (id inválido), 404 |
 | POST | `/api/movies` | `user` o `admin` | 201, 400, 401 |
 | PUT | `/api/movies/:id` | `user` (solo propias) o `admin` | 200, 400, 401, 403, 404 |
@@ -81,7 +87,9 @@ Query params de `GET /api/movies`: `search` (título, director o sinopsis), `gen
 `sortOrder` (`asc`/`desc`), `page` y `limit` (máx. 50). Responde `{ data, meta: { total, page, limit, totalPages } }`.
 
 `POST` y `PUT` exigen todos los campos obligatorios; `PATCH` acepta cualquier subconjunto (al menos uno).
-Ambos se validan con Zod y devuelven **400** con el error de cada campo.
+`PUT` reemplaza la película: un campo opcional que no viene (ej. `posterUrl`) se borra; con `PATCH` queda
+como estaba (para sacar el póster con `PATCH`, mandar `"posterUrl": ""`). Todos se validan con Zod y
+devuelven **400** con el error de cada campo.
 
 ### Otros
 
@@ -154,6 +162,7 @@ cd backend
 cp .env.example .env     # completar las variables (ver tabla)
 npm install
 npm run seed             # crea los usuarios de prueba y las películas de ejemplo
+npm run agent:chat -- "¿cuál es la mejor película?"   # opcional: prueba el asistente desde la terminal
 npm run dev              # http://localhost:3000
 
 # 2. Frontend (otra terminal)
