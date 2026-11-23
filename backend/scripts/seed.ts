@@ -13,8 +13,8 @@ import Movie, { IMovie } from "../src/models/Movie.js";
 type SeedUser = { name: string; email: string; password: string; role: "admin" | "user" };
 
 const users: SeedUser[] = [
-  { name: "Admin", email: requireEnv("SEED_ADMIN_EMAIL"), password: requireEnv("SEED_ADMIN_PASSWORD"), role: "admin" },
-  { name: "Usuario", email: requireEnv("SEED_USER_EMAIL"), password: requireEnv("SEED_USER_PASSWORD"), role: "user" },
+  { name: "Administrador", email: requireEnv("SEED_ADMIN_EMAIL"), password: requireEnv("SEED_ADMIN_PASSWORD"), role: "admin" },
+  { name: "Usuario de prueba", email: requireEnv("SEED_USER_EMAIL"), password: requireEnv("SEED_USER_PASSWORD"), role: "user" },
 ];
 
 type SeedMovie = Omit<IMovie, "ownerId" | "ownerName" | "releaseDate"> & { releaseDate: string };
