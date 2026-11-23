@@ -73,3 +73,12 @@ export interface Paginated<T> {
   data: T[];
   meta: { total: number; page: number; limit: number; totalPages: number };
 }
+
+// GET /api/movies/stats (solo admin).
+export interface MovieStats {
+  total: number;
+  watched: number;
+  averageRating: number;
+  byGenre: { genre: Genre; count: number }[];
+  topContributors: { name: string; count: number }[];
+}

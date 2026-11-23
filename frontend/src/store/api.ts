@@ -3,7 +3,7 @@ import { createApi, type BaseQueryFn } from "@reduxjs/toolkit/query/react";
 import type { AxiosRequestConfig } from "axios";
 import { api as http, toApiError, type ApiError } from "../lib/api";
 import type { MovieFormValues } from "../schemas/movie.schema";
-import type { Movie, MovieListParams, Paginated } from "../types/movie";
+import type { Movie, MovieListParams, MovieStats, Paginated } from "../types/movie";
 
 // Usa la instancia de axios con baseURL /api. El error se guarda como ApiError (message + details).
 const axiosBaseQuery: BaseQueryFn<AxiosRequestConfig, unknown, ApiError> = async (config) => {
@@ -19,7 +19,7 @@ const axiosBaseQuery: BaseQueryFn<AxiosRequestConfig, unknown, ApiError> = async
 const cleanParams = (params: MovieListParams) =>
   Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== ""));
 
-// El posterUrl vacio no se manda (el back lo acepta, pero asi queda mas limpio en la base).
+// posterUrl vacio no se manda: en un PUT, que falte significa "sin poster" (el back lo borra).
 const toBody = ({ posterUrl, ...rest }: MovieFormValues) => (posterUrl ? { ...rest, posterUrl } : rest);
 
 export interface AppConfig {
@@ -59,6 +59,11 @@ export const moviesApi = createApi({
       query: (id) => ({ url: `/movies/${id}`, method: "DELETE" }),
       invalidatesTags: ["Movies"],
     }),
+    // Solo admin: el back responde 403 a cualquier otro rol.
+    getMovieStats: build.query<MovieStats, void>({
+      query: () => ({ url: "/movies/stats" }),
+      providesTags: ["Movies"],
+    }),
     getConfig: build.query<AppConfig, void>({
       query: () => ({ url: "/config" }),
     }),
@@ -73,4 +78,5 @@ export const {
   usePatchMovieMutation,
   useDeleteMovieMutation,
   useGetConfigQuery,
+  useGetMovieStatsQuery,
 } = moviesApi;
