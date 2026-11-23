@@ -6,8 +6,8 @@ GitHub y Google) y un **asistente con LangChain + Gemini**. Desplegada en Render
 
 | | URL |
 |---|---|
-| Frontend (Static Site) | `https://<completar>.onrender.com` |
-| Backend (Web Service) | `https://<completar>.onrender.com` |
+| Frontend (Static Site) | https://butaca-3mfi.onrender.com |
+| Backend (Web Service) | https://tp2-peliculas-vewt.onrender.com (la app se usa desde el front; el back responde en `/health` y `/api/*`) |
 | Repositorio | https://github.com/lauta136/tp2-peliculas |
 
 > El backend usa el plan free de Render: si estuvo 15 minutos sin uso, el primer request tarda ~50 s.
@@ -220,14 +220,17 @@ F5 en cualquier ruta de React Router (ej. `/admin`) devuelva la app y no un 404.
 
 ### 4. OAuth de producción
 
-- **GitHub** (*Settings → Developer settings → OAuth Apps*, una app aparte de la de local):
-  Homepage `https://<front>.onrender.com`, callback `https://<front>.onrender.com/api/auth/callback/github`.
+- **GitHub** (*Settings → Developer settings → OAuth Apps*): Homepage `https://<front>.onrender.com` y
+  Redirect URIs `https://<front>.onrender.com/api/auth/callback/github` y
+  `http://localhost:5173/api/auth/callback/github`. GitHub ahora acepta varias Redirect URIs por app, así que
+  una sola sirve para local y producción.
 - **Google** (*Google Cloud Console → APIs y servicios → Credenciales → ID de cliente OAuth, aplicación web*):
   origen autorizado `https://<front>.onrender.com`, URI de redirección
   `https://<front>.onrender.com/api/auth/callback/google` (y las mismas con `http://localhost:5173` para local).
-  En *Pantalla de consentimiento / Público* la app tiene que estar **publicada (En producción)**, no en modo
-  prueba, para que pueda entrar cualquier cuenta. Con los scopes básicos (`openid`, `email`, `profile`)
-  Google no exige verificación.
+  En *Público* la app tiene que estar **publicada (En producción)**, no en modo prueba, para que pueda entrar
+  cualquier cuenta. Para publicar, Google pide en *Desarrollo de la marca* la página principal, el dominio
+  autorizado y un link a la política de privacidad: la app la tiene en `/privacidad`. Con los scopes básicos
+  (`openid`, `email`, `profile`) y sin logo, Google no exige verificación.
 
 ### 5. Datos de prueba en producción
 
