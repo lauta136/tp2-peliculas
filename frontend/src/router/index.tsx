@@ -12,6 +12,7 @@ import { AdminLayout } from "../pages/admin/AdminLayout";
 import { AdminMovies } from "../pages/admin/AdminMovies";
 import { AdminUsers } from "../pages/admin/AdminUsers";
 import { NotFound } from "../pages/NotFound";
+import { Privacy } from "../pages/Privacy";
 
 export const router = createBrowserRouter([
   // Fuera del Layout: pantalla completa, sin header
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       // Publicas
       { index: true, element: <Home /> },
       { path: "peliculas/:id", element: <MovieDetail /> },
+      { path: "privacidad", element: <Privacy /> },
 
       // Privadas: cualquier usuario logueado
       {

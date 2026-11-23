@@ -81,7 +81,10 @@ export const Layout = () => {
         <Outlet />
       </main>
       <footer className="border-t border-ink-700/60 py-6 text-center text-xs text-ink-500">
-        Butaca · TP2 Programación Web Full Stack · 2026
+        Butaca · TP2 Programación Web Full Stack · 2026 ·{" "}
+        <Link to="/privacidad" className="underline-offset-4 hover:text-ink-200 hover:underline">
+          Privacidad
+        </Link>
       </footer>
     </div>
   );
