@@ -176,7 +176,7 @@ origen y no hace falta CORS.
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | para GitHub | OAuth App de GitHub |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | para Google | OAuth Client de Google |
 | `GEMINI_API_KEY` | para el asistente | Key de https://aistudio.google.com/apikey |
-| `GEMINI_MODEL` | no | Modelo de Gemini (por defecto `gemini-3.5-flash`) |
+| `GEMINI_MODEL` | no | Modelo de Gemini (por defecto `gemini-3.5-flash-lite`; el plan gratis tiene una cuota diaria por modelo) |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | para el seed | Usuario admin de prueba |
 | `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` | para el seed | Usuario común de prueba |
 
