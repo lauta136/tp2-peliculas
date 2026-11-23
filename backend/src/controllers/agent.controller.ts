@@ -7,6 +7,14 @@ import { Request, Response } from "express";
 import { isAgentEnabled, streamAgent } from "../agent/agent.js";
 import { ChatInput } from "../schemas/agent.schema.js";
 
+// El detalle tecnico queda en el log; al usuario se le explica que paso y que puede hacer.
+function friendlyError(error: unknown): string {
+  const status = typeof error === "object" && error !== null && "status" in error ? error.status : undefined;
+  if (status === 429) return "Se agotó la cuota diaria gratuita del asistente. Probá de nuevo mañana.";
+  if (status === 503) return "Gemini está saturado en este momento. Probá de nuevo en unos segundos.";
+  return "El asistente no pudo responder. Probá de nuevo.";
+}
+
 function sendEvent(res: Response, event: string, data: unknown): void {
   res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 }
@@ -44,7 +52,7 @@ export async function chat(req: Request<{}, {}, ChatInput>, res: Response): Prom
     if (!abort.signal.aborted) {
       // El detalle (rate limit, etc.) queda en el log, no se le muestra al usuario.
       console.error("[agent] error:", error);
-      sendEvent(res, "error", { message: "El asistente no pudo responder" });
+      sendEvent(res, "error", { message: friendlyError(error) });
     }
   } finally {
     res.end();
